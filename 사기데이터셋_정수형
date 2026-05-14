@@ -1,0 +1,97 @@
+import random
+import csv
+from datetime import datetime, timedelta
+
+# 1. 성씨 / 이름 데이터
+last_names = [
+    "김","이","박","최","정","강","조","윤","장","임","한","오","서","신","권",
+    "황","안","송","류","전","홍","고","문","양","손","배","백","허","유","남",
+    "심","노","하","곽","성","차","주","우","구","민","진","지","엄","채","원",
+    "천","방","공","강전","제갈"
+]
+
+first_names = [
+    "민준","서연","지우","서준","하은","도윤","예준","지호","하준","서윤",
+    "유진","지민","은우","수아","건우","예린","현우","시은","준서","지안",
+    "아름송이","하린","유나","시우","도현","나연"
+]
+
+email_domains = ["naver.com", "daum.net", "gmail.com"]
+
+# 2. 은행 정보
+banks = [
+    ("신한은행", ["110","100"], 12),
+    ("우리은행", ["1002"], 13),
+    ("국민은행", ["001","123","567","789"], random.choice([12,13,14])),
+    ("하나은행", ["101","102","620"], 14),
+    ("IBK기업은행", ["001","002","003"], random.randint(10,14)),
+    ("NH농협은행", ["301","302","351","352"], 13),
+    ("KDB산업은행", ["022"], 14)
+]
+
+# 3. 랜덤 날짜 생성
+def random_date():
+    start_date = datetime.now() - timedelta(days=90)
+    return (start_date + timedelta(days=random.randint(0, 90))).strftime("%Y-%m-%d")
+
+# 4. 이름 생성
+def generate_name():
+    last = random.choice(last_names)
+    first = random.choice(first_names)
+    return last + first
+
+# 5. 계좌 생성
+def generate_account():
+    bank, codes, length = random.choice(banks)
+    prefix = random.choice(codes)
+
+    remaining_length = length - len(prefix)
+    numbers = ''.join([str(random.randint(0,9)) for _ in range(remaining_length)])
+
+    account = prefix + numbers
+    return bank, account
+
+# 6. 이메일 생성
+def generate_email():
+    if random.choice([True, False]):
+        name_part = ''.join(random.choices("abcdefghijklmnopqrstuvwxyz0123456789", k=8))
+        domain = random.choice(email_domains)
+        return f"{name_part}@{domain}"
+    return ""
+
+# 7. 전화번호 생성
+def generate_phone():
+    if random.choice([True, False]):
+        return "010" + ''.join([str(random.randint(0,9)) for _ in range(8)])
+    return ""
+
+# 8. 신고 기록 생성
+def generate_report():
+    count = random.randint(3, 10)  # 사기 기준 충족
+    dates = sorted([random_date() for _ in range(count)])
+    return "|".join(dates), count
+
+# 9. CSV 생성
+with open("fraud_accounts.csv", "w", newline="", encoding="utf-8-sig") as f:
+    writer = csv.writer(f)
+    
+    writer.writerow([
+        "name", "report_dates", "report_count",
+        "bank", "account_number",
+        "email", "phone"
+    ])
+
+    for _ in range(300):
+        name = generate_name()
+        report_dates, report_count = generate_report()
+        bank, account = generate_account()
+        email = generate_email()
+        phone = generate_phone()
+
+        writer.writerow([
+            name, report_dates, report_count,
+            bank, account,
+            email, phone
+        ])
+
+print("fraud_accounts.csv 생성 완료")
